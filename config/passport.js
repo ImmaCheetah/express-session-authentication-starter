@@ -4,16 +4,16 @@ const pool = require('./database');
 const validatePassword = require('../lib/passwordUtils').validatePassword;
 // const User = connection.models.User;
 
-const customFields = {
-    usernameField: 'uname',
-    passwordField: 'pwd'
-};
+// const customFields = {
+//     usernameField: 'uname',
+//     passwordField: 'pwd'
+// };
 
 const verifyCallback = async (username, password, done) => {
     try {
         const { rows } = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
         const user = rows[0];
-
+        console.log('im in verify callback')
         if (!user) {
             return done(null, false, { message: "Incorrect username" });
         }
@@ -31,7 +31,7 @@ const verifyCallback = async (username, password, done) => {
     }
 }
 
-const strategy = new LocalStrategy(customFields, verifyCallback);
+const strategy = new LocalStrategy(verifyCallback);
 
 passport.use(strategy);
 

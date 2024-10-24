@@ -45,8 +45,6 @@ app.use(express.urlencoded({extended: true}));
  * -------------- PASSPORT AUTHENTICATION ----------------
  */
 
-app.use(passport.initialize());
-app.use(passport.session());
 
 /**
  * -------------- ROUTES ----------------

@@ -9,7 +9,7 @@ const pool = require('../config/database');
  */
 
  // TODO
- router.post('/login', passport.authenticate('local', { failureRedirect: '/login-failure', successRedirect: 'login-success' }), (req, res, next) => {});
+ router.post('/login', passport.authenticate('local', { failureRedirect: '/login-failure', successRedirect: '/login-success' }), (req, res, next) => {});
 
  // TODO
  router.post('/register', async (req, res, next) => {
