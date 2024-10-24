@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const passport = require('passport');
-const passwordUtils = require('../lib/passwordUtils');
-const connection = require('../config/database');
+const {genPassword} = require('../lib/passwordUtils');
+const pool = require('../config/database');
 // const User = connection.models.User;
 
 /**
@@ -9,10 +9,31 @@ const connection = require('../config/database');
  */
 
  // TODO
- router.post('/login', (req, res, next) => {});
+ router.post('/login', passport.authenticate('local', { failureRedirect: '/login-failure', successRedirect: 'login-success' }), (req, res, next) => {});
 
  // TODO
- router.post('/register', (req, res, next) => {});
+ router.post('/register', async (req, res, next) => {
+    console.log(req.body)
+    const saltHash = genPassword(req.body.password);
+    
+    const salt = saltHash.salt;
+    const hash = saltHash.hash;
+
+    await pool.query("INSERT INTO users (username, hash, salt) VALUES ($1, $2, $3)", [req.body.username, hash, salt])
+
+    // const newUser = new User({
+    //     username: req.body.uname,
+    //     hash: hash,
+    //     salt: salt,
+    // });
+
+    // newUser.save()
+    //     .then((user) => {
+    //         console.log(user);
+    //     });
+
+    res.redirect('/login');
+ });
 
 
  /**

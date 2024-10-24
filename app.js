@@ -8,20 +8,10 @@ const crypto = require('crypto');
 const routes = require('./routes');
 const connection = require('./config/database');
 
-// Package documentation - https://www.npmjs.com/package/connect-mongo
-const pgStore = require('connect-pg-simple')(session);
-
-// Need to require the entire Passport config module so app.js knows about it
-require('./config/passport');
-
-/**
- * -------------- GENERAL SETUP ----------------
-*/
 // Create the Express application
 const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+// Package documentation - https://www.npmjs.com/package/connect-mongo
+const pgStore = require('connect-pg-simple')(session);
 
 /**
  * -------------- SESSION SETUP ----------------
@@ -37,6 +27,19 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24 // 1 day
     }
 }))
+
+/**
+ * -------------- GENERAL SETUP ----------------
+*/
+
+// Need to require the entire Passport config module so app.js knows about it
+require('./config/passport');
+// app.use(passport.initialize()) no longer needed
+app.use(passport.session());
+
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
 
 /**
  * -------------- PASSPORT AUTHENTICATION ----------------
