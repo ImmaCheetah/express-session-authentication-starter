@@ -2,6 +2,7 @@ const router = require('express').Router();
 const passport = require('passport');
 const {genPassword} = require('../lib/passwordUtils');
 const pool = require('../config/database');
+const { isAuth, isAdmin } = require('./authMiddleware');
 // const User = connection.models.User;
 
 /**
@@ -13,24 +14,13 @@ const pool = require('../config/database');
 
  // TODO
  router.post('/register', async (req, res, next) => {
-    console.log(req.body)
-    const saltHash = genPassword(req.body.password);
+    console.log('request body', req.body)
+    const saltHash = genPassword(req.body.pwd);
     
     const salt = saltHash.salt;
     const hash = saltHash.hash;
 
-    await pool.query("INSERT INTO users (username, hash, salt) VALUES ($1, $2, $3)", [req.body.username, hash, salt])
-
-    // const newUser = new User({
-    //     username: req.body.uname,
-    //     hash: hash,
-    //     salt: salt,
-    // });
-
-    // newUser.save()
-    //     .then((user) => {
-    //         console.log(user);
-    //     });
+    await pool.query("INSERT INTO users (username, hash, salt, admin) VALUES ($1, $2, $3, $4)", [req.body.uname, hash, salt, true])
 
     res.redirect('/login');
  });
@@ -48,8 +38,8 @@ router.get('/', (req, res, next) => {
 router.get('/login', (req, res, next) => {
    
     const form = '<h1>Login Page</h1><form method="POST" action="/login">\
-    Enter Username:<br><input type="text" name="username">\
-    <br>Enter Password:<br><input type="password" name="password">\
+    Enter Username:<br><input type="text" name="uname">\
+    <br>Enter Password:<br><input type="password" name="pwd">\
     <br><br><input type="submit" value="Submit"></form>';
 
     res.send(form);
@@ -60,8 +50,8 @@ router.get('/login', (req, res, next) => {
 router.get('/register', (req, res, next) => {
 
     const form = '<h1>Register Page</h1><form method="post" action="register">\
-                    Enter Username:<br><input type="text" name="username">\
-                    <br>Enter Password:<br><input type="password" name="password">\
+                    Enter Username:<br><input type="text" name="uname">\
+                    <br>Enter Password:<br><input type="password" name="pwd">\
                     <br><br><input type="submit" value="Submit"></form>';
 
     res.send(form);
@@ -74,21 +64,27 @@ router.get('/register', (req, res, next) => {
  * 
  * Also, look up what behaviour express session has without a maxage set
  */
-router.get('/protected-route', (req, res, next) => {
-    
-    // This is how you check if a user is authenticated and protect a route.  You could turn this into a custom middleware to make it less redundant
-    if (req.isAuthenticated()) {
-        res.send('<h1>You are authenticated</h1><p><a href="/logout">Logout and reload</a></p>');
-    } else {
-        res.send('<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>');
-    }
+router.get('/protected-route', isAuth, (req, res, next) => {
+    res.send('You made it to protected route')
+});
+
+router.get('/admin-route', isAdmin, (req, res, next) => {
+    res.send('You made it to admin route')
 });
 
 // Visiting this route logs the user out
-router.get('/logout', (req, res, next) => {
-    req.logout();
-    res.redirect('/protected-route');
-});
+// router.get('/logout', (req, res, next) => {
+//     req.logout();
+//     res.redirect('/protected-route');
+// });
+
+// USE POST REQUEST IN REAL APP
+router.get('/logout', function(req, res, next){
+    req.logout(function(err) {
+      if (err) { return next(err); }
+      res.redirect('/protected-route');
+    });
+  });
 
 router.get('/login-success', (req, res, next) => {
     res.send('<p>You successfully logged in. --> <a href="/protected-route">Go to protected route</a></p>');

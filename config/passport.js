@@ -4,10 +4,10 @@ const pool = require('./database');
 const validatePassword = require('../lib/passwordUtils').validatePassword;
 // const User = connection.models.User;
 
-// const customFields = {
-//     usernameField: 'uname',
-//     passwordField: 'pwd'
-// };
+const customFields = {
+    usernameField: 'uname',
+    passwordField: 'pwd'
+};
 
 const verifyCallback = async (username, password, done) => {
     try {
@@ -31,7 +31,7 @@ const verifyCallback = async (username, password, done) => {
     }
 }
 
-const strategy = new LocalStrategy(verifyCallback);
+const strategy = new LocalStrategy(customFields, verifyCallback);
 
 passport.use(strategy);
 
